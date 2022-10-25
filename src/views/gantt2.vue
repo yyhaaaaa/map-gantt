@@ -40,7 +40,6 @@ export default {
   },
   data() {
     return {
-      selectTime: 1666160623,
       originData: [
         {
           staffName: '老八',
@@ -100,7 +99,7 @@ export default {
         },
         {
           staffName: '李白',
-          id: 8982,
+          id: 8981,
           workOrderList: [
             {
               state: 'uncompleted',
@@ -215,18 +214,6 @@ export default {
         default:
           return this.currentDayList
       }
-    },
-    switchDate() {
-      switch (this.dateType) {
-        case 'day':
-          return moment(this.selectTime).format('HH')
-        case 'week':
-        case 'month':
-          return moment(this.selectTime).format('MM-DD')
-        default:
-          break;
-      }
-      return moment(this.selectTime).format('YYYY-MM-DD')
     },
     tableHeaderAlign() {
       return this.dateType === 'day' ? 'left' : 'center'
@@ -378,8 +365,8 @@ export default {
         let weekLabel = this.weekLabelList[startDay.day()]
         startDay.add(1, 'days')
         this.currentMonthList.push({
-          date,
-          weekLabel
+          label: `${date} ${weekLabel}`,
+          prop: date
         })
       }
       return startDay

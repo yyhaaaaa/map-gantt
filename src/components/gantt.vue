@@ -6,6 +6,7 @@
     </div>
     <el-table
       class="ganttable"
+      ref="elTable"
       :data="showTableData"
       border
       @mousedown.native="mousedown"
@@ -155,13 +156,26 @@ export default {
       moveTop: null
     }
   },
+  watch: {
+    ganttHead: {
+      handler () {
+        this.headEnumInit()
+      },
+      deep: true,
+      immediate: true
+    }
+  },
   created () {
-    this.ganttHead.forEach((item, index) => {
-      this.$set(this.headEnum, item.prop, { label: item.label, block: index })
-    })
+    this.headEnumInit()
     this.renderGantBlock()
   },
   methods: {
+    headEnumInit () {
+      this.headEnum = {}
+      this.ganttHead.forEach((item, index) => {
+        this.$set(this.headEnum, item.prop, { label: item.label, block: index })
+      })
+    },
     /**
      * @description: 渲染甘特图色块数据处理
      */
@@ -259,6 +273,9 @@ export default {
         })
       }
       this.showTableData = _showTableData
+      this.$nextTick(() => {
+        this.$refs.elTable.doLayout()
+      })
     },
     /**
      * @description: 根据工单id获取对应工单的信息
