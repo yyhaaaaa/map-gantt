@@ -52,7 +52,7 @@
                 <div class="color-lump"
                   :class="{'ganttd__success': mark.state === 'completed'}"
                   v-for="(mark, index) in scope.row.hide[column.prop].hideList" :key="index">
-                  {{mark.workOrderName}}
+                  {{mark.name}}
                 </div>
               </div>
               <div
@@ -221,7 +221,7 @@ export default {
               }
               if (rowData[_prop][tdi].visible === false && rowData[_prop][tdi].effect) {
                 hideNum += 1
-                hideList.push(this.getworkOrderInfo(rowData[_prop][tdi].id, rowData))
+                hideList.push(this.getHideInfo(rowData[_prop][tdi].id, rowData))
               }
               rowData[_prop][tdi].index = tdi
               const beyondBlock = rowData[_prop][tdi].beyondBlock // 超出的格子数
@@ -278,11 +278,11 @@ export default {
       })
     },
     /**
-     * @description: 根据工单id获取对应工单的信息
-     * @return {object} 匹配到的工单信息
+     * @description: 根据id获取对应的行信息
+     * @return {object} 匹配到的行信息
      */
-    getworkOrderInfo (id, staff) {
-      return staff.workOrderList.find(workOrder => workOrder.id === id)
+    getHideInfo (id, row) {
+      return row.data.find(td => td.id === id)
     },
     /**
      * @description: 计算当前数据是否有跨时间显示
@@ -551,13 +551,25 @@ export default {
   white-space: nowrap;
   text-overflow: ellipsis;
   z-index: 1;
-  color: rgba(255, 255, 255, 1);
+  color: #fff;
   font-size: 12px;
   text-align: left;
   font-family: PingFangSC-Regular;
 }
+.ganttd:hover, .color-lump:hover {
+  background-color: #4DACFF;
+}
+.ganttd:active, .color-lump:active {
+  background-color: #186FD2;
+}
 .ganttd__success {
   background-color: #00C241;
+}
+.ganttd__success:hover {
+  background-color: #27D65C;
+}
+.ganttd__success:active {
+  background-color:#00AC3F;
 }
 .ganttd__else {
   position: absolute;
