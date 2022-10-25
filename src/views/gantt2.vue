@@ -27,18 +27,6 @@
             :ganttData="tableData"
             ></Gantt>
     </div>
-    <!-- <vue-hash-calendar
-      ref="calendar"
-      :visible="true"
-      :isShowWeekView="true"
-      :isShowArrow="true"
-    /> -->
-    <el-date-picker
-      v-model="selectTime"
-      type="datetime"
-      value-format="timestamp"
-      placeholder="选择日期时间">
-    </el-date-picker>
   </div>
 </template>
 
@@ -81,7 +69,7 @@ export default {
               endTime: 1666117418000
             },
             {
-              state: 'uncompleted',
+              state: 'completed',
               workOrderName: '2:00 - 5:00 工单名称4',
               id: 4,
               startTime: 1666117418000,
@@ -285,6 +273,7 @@ export default {
           title: staff.staffName,
           order: index,
           avatar: staff.avatar,
+          workOrderList: staff.workOrderList,
           data: []
         }
         staff.workOrderList.forEach(workOrder => {

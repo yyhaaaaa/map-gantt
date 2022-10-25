@@ -49,9 +49,9 @@
               trigger="hover">
               <div class="more-workorder-list">
                 <div class="color-lump"
-                  :class="{'ganttd__success': mark.state === 'success'}"
+                  :class="{'ganttd__success': mark.state === 'completed'}"
                   v-for="(mark, index) in scope.row.hide[column.prop].hideList" :key="index">
-                  {{mark.name}}
+                  {{mark.workOrderName}}
                 </div>
               </div>
               <div
@@ -207,7 +207,7 @@ export default {
               }
               if (rowData[_prop][tdi].visible === false && rowData[_prop][tdi].effect) {
                 hideNum += 1
-                hideList.push(rowData[_prop][tdi])
+                hideList.push(this.getworkOrderInfo(rowData[_prop][tdi].id, rowData))
               }
               rowData[_prop][tdi].index = tdi
               const beyondBlock = rowData[_prop][tdi].beyondBlock // 超出的格子数
@@ -259,6 +259,13 @@ export default {
         })
       }
       this.showTableData = _showTableData
+    },
+    /**
+     * @description: 根据工单id获取对应工单的信息
+     * @return {object} 匹配到的工单信息
+     */
+    getworkOrderInfo (id, staff) {
+      return staff.workOrderList.find(workOrder => workOrder.id === id)
     },
     /**
      * @description: 计算当前数据是否有跨时间显示
