@@ -260,7 +260,6 @@ export default {
           title: staff.staffName,
           order: index,
           avatar: staff.avatar,
-          workOrderList: staff.workOrderList,
           data: []
         }
         staff.workOrderList.forEach(workOrder => {
@@ -269,7 +268,8 @@ export default {
           mark.data.push({
             start,
             end,
-            id: workOrder.id,
+            id: workOrder.id, 
+            sourceData: {},
             name: workOrder.workOrderName,
             state: workOrder.state === 'completed' ? 'success' : ''
           })
