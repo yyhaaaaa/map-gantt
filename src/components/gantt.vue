@@ -36,7 +36,7 @@
             <template v-for="(mark, index) in scope.row[column.prop]">
               <div
                 v-if="index < limit && mark.name"
-                class="ganttd"
+                class="ganttd ganttd__basic"
                 :class="{'ganttd__success': mark.state === 'success'}"
                 :key="index"
                 :data-td="column.prop"
@@ -50,14 +50,14 @@
               trigger="hover">
               <div class="more-workorder-list">
                 <div class="color-lump"
-                  :class="{'ganttd__success': mark.state === 'success'}"
+                  :class="{'ganttd__success': mark.state === 'completed'}"
                   v-for="(mark, index) in scope.row.hide[column.prop].hideList" :key="index">
                   {{mark.name}}
                 </div>
               </div>
               <div
                 slot="reference"
-                class="ganttd__else"
+                class="ganttd ganttd__else"
                 :class="{'ganttd__else_shadow': cellMoreShadow}"
                 :style="getTdStyle({ beyondBlock: 0 }, limit)"
                 :data-td="column.prop"
@@ -102,7 +102,7 @@ export default {
     // 表格横纵轴代表的数据类型
     sort: {
       type: Object,
-      default: () => {}
+      default: () => ({})
     },
     // 更多标题
     cellMoreTitle: {
@@ -209,7 +209,7 @@ export default {
           if (Array.isArray(rowData[_prop])) { // 若为数组，代表当前色块有数据
             // tdi 当前格子的数据index
             let hideNum = 0
-            let hideList = []
+            const hideList = []
             for (let tdi = 0; tdi < rowData[_prop].length; tdi++) { // 遍历当前td内的数据，找出有超出的数据，为其后面数据添加占位数据
               if (!rowData[_prop][tdi]) {
                 rowData[_prop][tdi] = {}
@@ -354,7 +354,7 @@ export default {
       }
       // const reg = /row-id\d+/
       // this.handleRow = e.target.className.match(reg)[0]
-      if (['ganttd', 'ganttd__else'].includes(e.target.className)) return
+      if (e.target.className.indexOf('ganttd') > -1) return
       this.handleRowid = e.target.dataset.id // 数据row id
       this.handleStart = e.target.dataset.td // 开始时间
       this.startLeft = e.clientX
@@ -364,14 +364,15 @@ export default {
       window.addEventListener('mouseup', this.mouseup)
     },
     mousemove (e) {
+      // console.log(e)
       this.moveLeft = e.clientX
       this.moveTop = e.clientY
       this.crashPlaceholder(this.moveLeft, this.moveTop, this.startLeft, this.startTop)
       this.elementCrash()
     },
     mouseup (e) {
-      // console.log(e)
-      this.handleEnd = e.target.dataset.td// 结束时间
+      // this.handleEnd = e.target.dataset.td// 结束时间
+      this.handleEnd = this.elementCrash('', e)
       const table = document.documentElement.querySelector('.ganttable')
       table.removeEventListener('mousemove', this.mousemove)
       window.removeEventListener('mouseup', this.mouseup)
@@ -416,8 +417,11 @@ export default {
       // show.style.backgroundColor = 'blue'
       document.body.appendChild(show) // 鼠标滑动的区域
     },
+
     // 碰撞检测 判断鼠标滑动区域与table中重合的部分 进行高亮
-    elementCrash (type) {
+    elementCrash (type, e) {
+      const x = !!e && e.clientX // 鼠标位置
+      const y = !!e && e.clientY // 鼠标位置
       const td = document.documentElement.getElementsByClassName(`row-id${this.handleRowid}`)
       for (let i = 0; i < td.length; i++) {
         const _this = td[i]
@@ -444,6 +448,9 @@ export default {
         } else {
           _this.className = _this.className.replace(' easy-gantt__showColor', '')
           _this.className = _this.className + ' easy-gantt__showColor'
+        }
+        if (e && x > l1 && x < r1 && y > t1 && y < b1) { // 修复滑动时间区间选取bug 鼠标最后位置
+          return _this.dataset.td
         }
       }
     }
@@ -475,7 +482,7 @@ export default {
   border-radius: 4px;
   background-color: #248DF5;
   color: #fff;
-  font-size: 12px; 
+  font-size: 12px;
 }
 .head-sort {
   z-index: 10;
@@ -539,27 +546,33 @@ export default {
   width: max-content;
 }
 .ganttd {
-  cursor: pointer;
   position: absolute;
-  display: flex;
-  align-items: center;
   border-radius: 4px;
   padding: 0px 12px;
-  background-color: #248DF5;
+  text-overflow: ellipsis;
   left: 10px;
   overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
   z-index: 1;
-  color: #fff;
-  font-size: 12px;
   text-align: left;
+  font-size: 12px;
   font-family: PingFangSC-Regular;
+
 }
-.ganttd:hover, .color-lump:hover {
+.ganttd__basic {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background-color: #248DF5;
+  color: #fff;
+}
+.ganttd__else {
+  color: rgba(50, 50, 51, 1);
+}
+.ganttd__basic:hover, .color-lump:hover {
   background-color: #4DACFF;
 }
-.ganttd:active, .color-lump:active {
+.ganttd__basic:active, .color-lump:active {
   background-color: #186FD2;
 }
 .ganttd__success {
@@ -571,20 +584,7 @@ export default {
 .ganttd__success:active {
   background-color:#00AC3F;
 }
-.ganttd__else {
-  position: absolute;
-  border-radius: 4px;
-  padding: 0px 12px;
-  left: 10px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  z-index: 1;
-  color: rgba(50, 50, 51, 1);
-  font-size: 12px;
-  text-align: left;
-  font-family: PingFangSC-Regular;
-}
+
 .ganttd__else_shadow {
   background-color: #f3f3f3;
 }
