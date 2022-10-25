@@ -1,0 +1,30 @@
+.DS_Store
+node_modules/
+/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+selenium-debug.log
+debug.log
+.nvmrc
+
+# 依赖lock文件
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# 压缩包
+*.zip
+*.7z
+*.rar
+
+# Other
+eslint-*.*
+stylelint-result.txt
+src/router/entry-router.js
