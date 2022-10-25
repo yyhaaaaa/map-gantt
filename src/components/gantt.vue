@@ -50,7 +50,7 @@
               trigger="hover">
               <div class="more-workorder-list">
                 <div class="color-lump"
-                  :class="{'ganttd__success': mark.state === 'completed'}"
+                  :class="{'ganttd__success': mark.state === 'success'}"
                   v-for="(mark, index) in scope.row.hide[column.prop].hideList" :key="index">
                   {{mark.name}}
                 </div>
