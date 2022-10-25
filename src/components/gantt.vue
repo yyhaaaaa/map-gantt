@@ -224,23 +224,26 @@ export default {
                     const length = rowData[_prop].length
                     rowData[_nextProp] = new Array(length).fill(null)
                   }
+                  const { id } = rowData[_prop][tdi]
                   if (!replaceFlag) {
                     if (!rowData[_nextProp][tdi]) {
                       rowData[_nextProp][tdi] = {
                         effect: true
                       }
                     }
-                    if (rowData[_prop][tdi].visible) {
-                      rowData[_nextProp][tdi].visible = true
-                    } else {
-                    // rowData[_nextProp].splice(tdi, 0, { visible: false })
-                      rowData[_nextProp][tdi].visible = false
-                    }
+                    // if (rowData[_prop][tdi].visible) {
+                    //   rowData[_nextProp][tdi].visible = true
+                    // } else {
+                    // // rowData[_nextProp].splice(tdi, 0, { visible: false })
+                    //   rowData[_nextProp][tdi].visible = false
+                    // }
+                    rowData[_nextProp][tdi].visible = rowData[_prop][tdi].visible
+                    rowData[_nextProp][tdi].id = id
                   } else {
                     if (!rowData[_nextProp][tdi]) {
-                      rowData[_nextProp].splice(tdi, 1, { visible: rowData[_prop][tdi].visible, effect: true })
+                      rowData[_nextProp].splice(tdi, 1, { visible: rowData[_prop][tdi].visible, effect: true, id: id })
                     } else {
-                      rowData[_nextProp].splice(tdi, 0, { visible: rowData[_prop][tdi].visible, effect: true })
+                      rowData[_nextProp].splice(tdi, 0, { visible: rowData[_prop][tdi].visible, effect: true, id: id })
                     }
                   }
 
