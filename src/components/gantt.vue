@@ -33,13 +33,13 @@
         <template slot-scope="scope">
           <el-popover trigger="hover" placement="top">
             <p>点击单元格指派</p>
-            <div class="td-box" slot="reference" :class="`row-id${scope.row.id}`" :data-td="column.prop" :data-id="scope.row.id"></div>
+            <div class="td-box" :class="`${uid}-row-id${scope.row.id}`" :data-td="column.prop" :data-id="scope.row.id"></div>
           </el-popover>
           <div class="cell-block" :style="getCellHeight(scope.row[column.prop])"  :data-td="column.prop">
             <template v-for="(mark, index) in scope.row[column.prop]">
               <div
                 v-if="index < limit && mark.name"
-                class="ganttd"
+                class="ganttd ganttd__basic"
                 :class="{'ganttd__success': mark.state === 'success'}"
                 :key="index"
                 :data-td="column.prop"
@@ -60,7 +60,7 @@
               </div>
               <div
                 slot="reference"
-                class="ganttd__else"
+                class="ganttd ganttd__else"
                 :class="{'ganttd__else_shadow': cellMoreShadow}"
                 :style="getTdStyle({ beyondBlock: 0 }, limit)"
                 :data-td="column.prop"
@@ -105,7 +105,7 @@ export default {
     // 表格横纵轴代表的数据类型
     sort: {
       type: Object,
-      default: () => {}
+      default: () => ({})
     },
     // 更多标题
     cellMoreTitle: {
@@ -142,6 +142,12 @@ export default {
     },
     tdPaddingTop () {
       return 9
+    },
+    uid () {
+      return this._uid
+    },
+    rowclass () {
+      return `${this.uid}-row-id${this.handleRowid}`
     }
   },
   data () {
@@ -187,7 +193,7 @@ export default {
       const _showTableData = this.ganttData.map(data => {
         const obj = {}
         const _data = JSON.parse(JSON.stringify(data))
-        _data.data.forEach((item, index) => {
+        _data.data.forEach((item) => {
           if (!Object.prototype.hasOwnProperty.call(obj, item.start)) {
             obj[item.start] = []
           }
@@ -212,7 +218,7 @@ export default {
           if (Array.isArray(rowData[_prop])) { // 若为数组，代表当前色块有数据
             // tdi 当前格子的数据index
             let hideNum = 0
-            let hideList = []
+            const hideList = []
             for (let tdi = 0; tdi < rowData[_prop].length; tdi++) { // 遍历当前td内的数据，找出有超出的数据，为其后面数据添加占位数据
               if (!rowData[_prop][tdi]) {
                 rowData[_prop][tdi] = {}
@@ -361,27 +367,30 @@ export default {
       }
       // const reg = /row-id\d+/
       // this.handleRow = e.target.className.match(reg)[0]
-      if (['ganttd', 'ganttd__else'].includes(e.target.className)) return
+      if (e.target.className.indexOf('ganttd') > -1) return
       this.handleRowid = e.target.dataset.id // 数据row id
       this.handleStart = e.target.dataset.td // 开始时间
       this.startLeft = e.clientX
       this.startTop = e.clientY
-      const table = document.documentElement.querySelector('.ganttable')
-      table.addEventListener('mousemove', this.mousemove)
+      // const table = document.documentElement.querySelector('.ganttable')
+      window.addEventListener('mousemove', this.mousemove)
       window.addEventListener('mouseup', this.mouseup)
     },
     mousemove (e) {
+      // console.log(e)
       this.moveLeft = e.clientX
       this.moveTop = e.clientY
       this.crashPlaceholder(this.moveLeft, this.moveTop, this.startLeft, this.startTop)
       this.elementCrash()
     },
     mouseup (e) {
-      // console.log(e)
-      this.handleEnd = e.target.dataset.td// 结束时间
-      const table = document.documentElement.querySelector('.ganttable')
-      table.removeEventListener('mousemove', this.mousemove)
-      window.removeEventListener('mouseup', this.mouseup)
+      if (e.target.className.indexOf(this.rowclass) === -1 && e.target.className.indexOf('ganttd') === -1) return
+      this.handleEnd = this.elementCrash('', e)
+      // const table = document.documentElement.querySelector('.ganttable')
+      setTimeout(() => {
+        window.removeEventListener('mousemove', this.mousemove)
+        window.removeEventListener('mouseup', this.mouseup)
+      }, 1000)
       if (this.handleEnd) {
         if (this.beyondBlock({ start: this.handleStart, end: this.handleEnd }) < 0) { // 从右往左选
           [this.handleStart, this.handleEnd] = [this.handleEnd, this.handleStart] // 交换开始合结束位置
@@ -392,7 +401,6 @@ export default {
             end: this.handleEnd
           }
           this.$emit('seletcData', select)
-          console.log(select)
           this.handleClose('init')
           return
         }
@@ -423,9 +431,12 @@ export default {
       // show.style.backgroundColor = 'blue'
       document.body.appendChild(show) // 鼠标滑动的区域
     },
+
     // 碰撞检测 判断鼠标滑动区域与table中重合的部分 进行高亮
-    elementCrash (type) {
-      const td = document.documentElement.getElementsByClassName(`row-id${this.handleRowid}`)
+    elementCrash (type, e) {
+      const x = !!e && e.clientX // 鼠标位置
+      const y = !!e && e.clientY // 鼠标位置
+      const td = document.documentElement.getElementsByClassName(this.rowclass)
       for (let i = 0; i < td.length; i++) {
         const _this = td[i]
         if (this.dialogVisible || type === 'init') {
@@ -451,6 +462,9 @@ export default {
         } else {
           _this.className = _this.className.replace(' easy-gantt__showColor', '')
           _this.className = _this.className + ' easy-gantt__showColor'
+        }
+        if (e && x > l1 && x < r1 && y > t1 && y < b1) { // 修复滑动时间区间选取bug 鼠标最后位置
+          return _this.dataset.td
         }
       }
     }
@@ -482,7 +496,7 @@ export default {
   border-radius: 4px;
   background-color: #248DF5;
   color: #fff;
-  font-size: 12px; 
+  font-size: 12px;
 }
 .head-sort {
   z-index: 10;
@@ -546,27 +560,33 @@ export default {
   width: max-content;
 }
 .ganttd {
-  cursor: pointer;
   position: absolute;
-  display: flex;
-  align-items: center;
   border-radius: 4px;
   padding: 0px 12px;
-  background-color: #248DF5;
+  text-overflow: ellipsis;
   left: 10px;
   overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
   z-index: 1;
-  color: #fff;
-  font-size: 12px;
   text-align: left;
+  font-size: 12px;
   font-family: PingFangSC-Regular;
+
 }
-.ganttd:hover, .color-lump:hover {
+.ganttd__basic {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background-color: #248DF5;
+  color: #fff;
+}
+.ganttd__else {
+  color: rgba(50, 50, 51, 1);
+}
+.ganttd__basic:hover, .color-lump:hover {
   background-color: #4DACFF;
 }
-.ganttd:active, .color-lump:active {
+.ganttd__basic:active, .color-lump:active {
   background-color: #186FD2;
 }
 .ganttd__success {
@@ -578,20 +598,7 @@ export default {
 .ganttd__success:active {
   background-color:#00AC3F;
 }
-.ganttd__else {
-  position: absolute;
-  border-radius: 4px;
-  padding: 0px 12px;
-  left: 10px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  z-index: 1;
-  color: rgba(50, 50, 51, 1);
-  font-size: 12px;
-  text-align: left;
-  font-family: PingFangSC-Regular;
-}
+
 .ganttd__else_shadow {
   background-color: #f3f3f3;
 }
