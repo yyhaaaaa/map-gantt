@@ -31,7 +31,7 @@
         :data="column"
         width="180">
         <template slot-scope="scope">
-          <div class="td-box" :class="`row-id${scope.row.id}`" :data-td="column.prop" :data-id="scope.row.id"></div>
+          <div class="td-box" :class="`${uid}-row-id${scope.row.id}`" :data-td="column.prop" :data-id="scope.row.id"></div>
           <div class="cell-block" :style="getCellHeight(scope.row[column.prop])"  :data-td="column.prop">
             <template v-for="(mark, index) in scope.row[column.prop]">
               <div
@@ -139,6 +139,12 @@ export default {
     },
     tdPaddingTop () {
       return 9
+    },
+    uid () {
+      return this._uid
+    },
+    rowclass () {
+      return `${this.uid}-row-id${this.handleRowid}`
     }
   },
   data () {
@@ -359,8 +365,8 @@ export default {
       this.handleStart = e.target.dataset.td // 开始时间
       this.startLeft = e.clientX
       this.startTop = e.clientY
-      const table = document.documentElement.querySelector('.ganttable')
-      table.addEventListener('mousemove', this.mousemove)
+      // const table = document.documentElement.querySelector('.ganttable')
+      window.addEventListener('mousemove', this.mousemove)
       window.addEventListener('mouseup', this.mouseup)
     },
     mousemove (e) {
@@ -371,11 +377,13 @@ export default {
       this.elementCrash()
     },
     mouseup (e) {
-      // this.handleEnd = e.target.dataset.td// 结束时间
+      if (e.target.className.indexOf(this.rowclass) === -1 && e.target.className.indexOf('ganttd') === -1) return
       this.handleEnd = this.elementCrash('', e)
-      const table = document.documentElement.querySelector('.ganttable')
-      table.removeEventListener('mousemove', this.mousemove)
-      window.removeEventListener('mouseup', this.mouseup)
+      // const table = document.documentElement.querySelector('.ganttable')
+      setTimeout(() => {
+        window.removeEventListener('mousemove', this.mousemove)
+        window.removeEventListener('mouseup', this.mouseup)
+      }, 1000)
       if (this.handleEnd) {
         if (this.beyondBlock({ start: this.handleStart, end: this.handleEnd }) < 0) { // 从右往左选
           [this.handleStart, this.handleEnd] = [this.handleEnd, this.handleStart] // 交换开始合结束位置
@@ -386,7 +394,6 @@ export default {
             end: this.handleEnd
           }
           this.$emit('seletcData', select)
-          console.log(select)
           this.handleClose('init')
           return
         }
@@ -422,7 +429,7 @@ export default {
     elementCrash (type, e) {
       const x = !!e && e.clientX // 鼠标位置
       const y = !!e && e.clientY // 鼠标位置
-      const td = document.documentElement.getElementsByClassName(`row-id${this.handleRowid}`)
+      const td = document.documentElement.getElementsByClassName(this.rowclass)
       for (let i = 0; i < td.length; i++) {
         const _this = td[i]
         if (this.dialogVisible || type === 'init') {
