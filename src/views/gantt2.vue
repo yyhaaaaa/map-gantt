@@ -308,7 +308,7 @@ export default {
     changeDateType(type) {
       if (type === this.dateType) return
       this.dateType = type
-      this.currentTime = moment()
+      // this.currentTime = moment()
       this.currentTimeLabel = this.dateFormat(this.currentTime)
       if (type === 'week') {
         this.getNextWeekList()

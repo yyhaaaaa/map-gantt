@@ -8,8 +8,8 @@
       class="ganttable"
       ref="elTable"
       :data="showTableData"
+      @row-click="rowClick"
       border
-      @mousedown.native="mousedown"
       >
       <el-table-column
         width="200"
@@ -31,7 +31,10 @@
         :data="column"
         width="180">
         <template slot-scope="scope">
-          <div class="td-box" :class="`row-id${scope.row.id}`" :data-td="column.prop" :data-id="scope.row.id"></div>
+          <el-popover trigger="hover" placement="top">
+            <p>点击单元格指派</p>
+            <div class="td-box" slot="reference" :class="`row-id${scope.row.id}`" :data-td="column.prop" :data-id="scope.row.id"></div>
+          </el-popover>
           <div class="cell-block" :style="getCellHeight(scope.row[column.prop])"  :data-td="column.prop">
             <template v-for="(mark, index) in scope.row[column.prop]">
               <div
@@ -47,7 +50,7 @@
               v-if="scope.row.hide[column.prop] && scope.row.hide[column.prop].hideNum"
               placement="bottom"
               width="288"
-              trigger="hover">
+              trigger="click">
               <div class="more-workorder-list">
                 <div class="color-lump"
                   :class="{'ganttd__success': mark.state === 'success'}"
@@ -295,7 +298,11 @@ export default {
     },
     tdClick (row, item) {
       this.$emit('itemClick', item)
-      // console.log(row, item)
+      console.log('色块', item)
+    },
+    rowClick(row) {
+      this.$emit('rowClick', row)
+      console.log('row', row)
     },
     /**
      * @description: 获取td内渲染的色块样式，在单元格内的位置为：
